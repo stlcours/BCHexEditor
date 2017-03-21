@@ -558,7 +558,7 @@ resourcestring
   STR_SCRAPFILE = 'Dump of %s.bin';
 
   // native clipboard format name
-  MPTH_CF = 'TBCHexeditorEx Clipboard Format';
+  MPTH_CF = 'TBCHexEditorEx Clipboard Format';
 
   // predefined clipboard format names
   STR_CF_TEXT = 'Text';
