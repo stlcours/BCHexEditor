@@ -28,7 +28,7 @@ uses
 
 procedure Register;
 begin
-  RegisterComponents('mirkes.de', [TBCHexEditor, TBCHexEditorEx]);
+  RegisterComponents('BCHexEditor', [TBCHexEditor, TBCHexEditorEx]);
   RegisterPropertyEditor(TypeInfo(Integer), TCustomBCHexEditor, 'BytesPerUnit',
     TBytesPerUnitProperty);
   RegisterPropertyEditor(TypeInfo(Byte), TCustomBCHexEditor, 'RulerNumberBase',

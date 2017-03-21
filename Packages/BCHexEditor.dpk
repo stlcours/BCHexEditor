@@ -1,5 +1,7 @@
 package BCHexEditor;
 
+{$R '..\Source\BCHexEditorReg.dcr'}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
 {$ASSERTIONS OFF}
 {$BOOLEVAL OFF}
@@ -21,7 +23,9 @@ package BCHexEditor;
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
-{$DESCRIPTION 'BCHexEditor component'}
+{$ENDIF IMPLICITBUILDING}
+{$DESCRIPTION 'BCHexEditor components'}
+{$IMPLICITBUILD ON}
 
 requires
   rtl,
