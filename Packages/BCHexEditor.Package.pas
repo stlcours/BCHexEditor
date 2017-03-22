@@ -1,6 +1,6 @@
-unit BCHexEditorReg;
+unit BCHexEditor.Package;
 
-interface
+interface {********************************************************************}
 
 uses
   Classes, DesignIntf, DesignEditors,
@@ -21,7 +21,7 @@ type
 
 procedure Register;
 
-implementation
+implementation {***************************************************************}
 
 uses
   SysUtils;
@@ -29,10 +29,12 @@ uses
 procedure Register;
 begin
   RegisterComponents('BCHexEditor', [TBCHexEditor, TBCHexEditorEx]);
+
   RegisterPropertyEditor(TypeInfo(Integer), TCustomBCHexEditor, 'BytesPerUnit',
     TBytesPerUnitProperty);
   RegisterPropertyEditor(TypeInfo(Byte), TCustomBCHexEditor, 'RulerNumberBase',
     TRulerNumberBaseProperty);
+
   RegisterPropertiesInCategory(sVisualCategoryName, TCustomBCHexEditor,
     ['DrawGridLines', 'Colors', 'CaretStyle', 'BytesPerRow', 'FocusFrame',
     'BytesPerColumn',

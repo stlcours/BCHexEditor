@@ -1,6 +1,6 @@
-package BCHexEditor;
+package BCHexEditor.Package;
 
-{$R '..\Source\BCHexEditorReg.dcr'}
+{$R 'BCHexEditor.Package.dcr'}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
 {$ASSERTIONS OFF}
@@ -32,8 +32,8 @@ requires
   designide;
 
 contains
+  BCHexEditor.Package in 'BCHexEditor.Package.pas',
   BCHexEditor in '..\Source\BCHexEditor.pas',
-  BCHexEditorEx in '..\Source\BCHexEditorEx.pas',
-  BCHexEditorReg in '..\Source\BCHexEditorReg.pas';
+  BCHexEditorEx in '..\Source\BCHexEditorEx.pas';
 
 end.
