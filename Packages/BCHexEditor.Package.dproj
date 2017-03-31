@@ -41,7 +41,7 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
         <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
-        <DCC_BplOutput>$(BDS)\Projects\Bpl</DCC_BplOutput>
+        <DCC_BplOutput>$(BDSUSERDIR)\Projects\Bpl</DCC_BplOutput>
         <GenDll>true</GenDll>
         <DCC_K>false</DCC_K>
         <DCC_N>false</DCC_N>
