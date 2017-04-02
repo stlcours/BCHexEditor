@@ -1,6 +1,5 @@
-package BCHexEditor.Package;
+package BCHexEditor.Package.Designtime;
 
-{$R *.res}
 {$R 'BCHexEditor.Package.dcr'}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
@@ -27,15 +26,15 @@ package BCHexEditor.Package;
 {$DEFINE DEBUG}
 {$ENDIF IMPLICITBUILDING}
 {$DESCRIPTION 'BCHexEditor components'}
+{$DESIGNONLY}
 {$IMPLICITBUILD ON}
 
 requires
   rtl,
-  designide;
+  designide,
+  BCHexEditor.Package.Runtime;
 
 contains
-  BCHexEditor.Package in 'BCHexEditor.Package.pas',
-  BCHexEditor in '..\Source\BCHexEditor.pas',
-  BCHexEditorEx in '..\Source\BCHexEditorEx.pas';
+  BCHexEditor.Package in 'BCHexEditor.Package.pas';
 
 end.
