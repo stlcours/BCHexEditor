@@ -5,9 +5,8 @@ unit BCHexEditor;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-
-  Grids;
+  Windows, Messages,
+  SysUtils, Classes, Graphics, Controls, Forms, Grids;
 
 type
   // @exclude
@@ -694,12 +693,6 @@ type
     FFixedFileSizeOverride: boolean;
     // @exclude(used by TBCHexEditorEx for internal undo changing)
     FModified: boolean;
-{$IFDEF BCB}
-    // bcb seems to need overwritten abstract methods for dynamically created
-    // controls (this method is never called in TBCHexEditor/Ex)
-    procedure DrawCell(ACol, ARow: Longint; ARect: TRect;
-      AState: TGridDrawState); override;
-{$ENDIF}
 
     // @exclude(overwrite mouse wheel for zooming)
     function DoMouseWheelDown(Shift: TShiftState; MousePos: TPoint): boolean;
@@ -7357,13 +7350,6 @@ begin
   iPos := (iPos div FBytesPerRow) + GRID_FIXED;
   TopRow := Max(GRID_FIXED, Min(iPos - (VisibleRowCount div 2), RowCount-VisibleRowCount));
 end;
-
-{$IFDEF BCB}
-procedure TCustomMPHexEditor.DrawCell(ACol, ARow: Integer; ARect: TRect;
-  AState: TGridDrawState);
-begin
-end;
-{$ENDIF}
 
 { TBCHColors }
 
