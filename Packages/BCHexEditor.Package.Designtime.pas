@@ -1,4 +1,4 @@
-unit BCHexEditor.Package;
+unit BCHexEditor.Package.Designtime;
 
 interface {********************************************************************}
 
