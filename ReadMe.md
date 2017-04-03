@@ -1,6 +1,6 @@
 <h3>Description</h3>
 
-A hex edit control for the RAD Studio (Delphi and C++ Builder VCL) with addresses, hexadecimal value, text values. The text characters can be 8 bit or Unicode. Colors and several other options can be changed.
+A hex edit control for the RAD Studio (Delphi and C++ Builder VCL) with addresses, hexadecimal values, text values. The text characters can be 8 bit or Unicode. Colors and several other options can be changed.
 
 <h3>Build requirements</h3>
 

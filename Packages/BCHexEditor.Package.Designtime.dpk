@@ -25,7 +25,7 @@ package BCHexEditor.Package.Designtime;
 {$IMAGEBASE $400000}
 {$DEFINE DEBUG}
 {$ENDIF IMPLICITBUILDING}
-{$DESCRIPTION 'BCHexEditor components'}
+{$DESCRIPTION 'BCHexEditor Components'}
 {$DESIGNONLY}
 {$IMPLICITBUILD ON}
 
