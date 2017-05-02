@@ -1636,7 +1636,7 @@ function ConvertHexToBin(aFrom: PChar; aTo: PAnsiChar; const aCount: integer; co
 (* translate binary data to its hex representation (see @link(ConvertHexToBin)),
    (see @link(SwapNibbles) for the meaning of the SwapNibbles value)
 *)
-function ConvertBinToHex(aFrom, aTo: PChar; const aCount: integer; const
+function ConvertBinToHex(aFrom: PAnsiChar; aTo: PChar; const aCount: integer; const
   SwapNibbles: boolean): PChar;
 
 // convert X and Y into a TGridCoord record
@@ -2024,7 +2024,7 @@ end;
 
 // convert binary data to '00 01 02...'
 
-function ConvertBinToHex(aFrom, aTo: PChar; const aCount: integer;
+function ConvertBinToHex(aFrom: PAnsiChar; aTo: PChar; const aCount: integer;
   const SwapNibbles: boolean): PChar;
 var
   LIntLoop: integer;

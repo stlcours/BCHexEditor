@@ -46,9 +46,5 @@ object MainForm: TMainForm
     Colors.ActiveFieldBackground = clWindow
     FocusFrame = True
     DrawGridLines = False
-    ExplicitLeft = 128
-    ExplicitTop = 88
-    ExplicitWidth = 320
-    ExplicitHeight = 120
   end
 end
