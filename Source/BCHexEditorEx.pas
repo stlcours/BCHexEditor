@@ -446,8 +446,6 @@ type
     // see inherited @inherited
     property SeparateBlocksInCharField;
     // see inherited @inherited
-    property FindProgress;
-    // see inherited @inherited
     property RulerNumberBase;
   end;
 
