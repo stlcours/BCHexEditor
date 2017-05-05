@@ -255,27 +255,6 @@ type
     const Number: int64;
     var OffsetText: string) of object;
 
-  (* handler for custom search routines<br><br>
-
-     - Pattern: the data to find
-     - PatLength: length of the data to find
-     - SearchFrom: first search position
-     - SearchUntil: last search position
-     - IgnoreCase: case sensitive?
-     - Wilcard: Wildcard character (only used by FindWithWildcard)
-     - FoundPos: result, set to -1 if data was not found
-  *)
-  TBCPHFindEvent = procedure(Sender: TObject;
-    const Pattern: PChar; const PatLength: integer;
-    const SearchFrom, SearchUntil: integer;
-    const IgnoreCase: boolean;
-    const Wildcard: Char;
-    var FoundPos: Integer) of object;
-
-  // precompiled converted character table types for faster data search
-  PBCHFindTable = ^TBCPHFindTable;
-  TBCPHFindTable = array[#0..#255] of Char;
-
   //@exclude
   // flags internally used in the undo storage
   TBCHUndoFlag = (
@@ -456,10 +435,7 @@ type
 
     FIsViewSyncing: boolean;
     FIntLastHexCol: integer;
-    FFindTable,
-      FFindTableI: TBCPHFindTable;
     FIsMaxOffset: boolean;
-    FFindProgress: boolean;
     FBlockSize: Integer;
     FSepCharBlocks: boolean;
     FOnGetOffsetText: TBCPHGetOffsetTextEvent;
@@ -543,8 +519,6 @@ type
 
     FIsDrawDataSelected: boolean;
 
-    FOnWildcardFind: TBCPHFindEvent;
-    FOnFind: TBCPHFindEvent;
     FSetDataSizeFillByte: Byte;
     FRulerNumberBase: byte;
     property Color;
@@ -680,7 +654,6 @@ type
     procedure SetDataSize(const Value: integer);
     procedure SetBlockSize(const Value: Integer);
     procedure SetSepCharBlocks(const Value: boolean);
-    procedure SetFindProgress(const Value: boolean);
     procedure SetRulerNumberBase(const Value: byte);
     procedure SetMaskedChars(const Value: string);
   protected
@@ -817,9 +790,6 @@ type
     property AutoBytesPerRow: boolean read FAutoBytesPerRow write SetAutoBytesPerRow default False;
     // number of bytes to show in each row
     property BytesPerRow: integer read FBytesPerRow write SetBytesPerRow;
-    // if set to True, the find* routines also fire OnProgress events (default is False)
-    property FindProgress: boolean read FFindProgress write SetFindProgress
-      default False;
     // number of bytes to show in each column
     property BytesPerColumn: integer read GetBytesPerColumn write
       SetBytesPerColumn default 2;
@@ -1121,29 +1091,6 @@ type
     // see @link(GetSelectionAsText) and @link(SetSelectionAsText)
     property SelectionAsText: AnsiString read GetSelectionAsText write
       SetSelectionAsText;
-{$IFNDEF BCB}
-    (* precompiled character comparison table for custom find routines, see also
-     @link(FindTableI), @link(OnFind), @link(OnWildcardFind), case sensitive, not
-     public under BCB!
-    *)
-    property FindTable: TBCPHFindTable read FFindTable;
-    (* precompiled character comparison table for custom find routines, see also
-     @link(FindTable), @link(OnFind), @link(OnWildcardFind), case insensitive, not
-     public under BCB!
-    *)
-    property FindTableI: TBCPHFindTable read FFindTableI;
-{$ENDIF}
-
-    // implement your custom @link(Find) routine by assigning a method to this handler,
-    // see also @link(OnWildcardFind)
-    property OnFind: TBCPHFindEvent read FOnFind write FOnFind;
-    // implement your custom @link(FindWithWildcard) routine by assigning a method
-    // to this handler, see also @link(OnFind)
-    property OnWildcardFind: TBCPHFindEvent read FOnWildcardFind
-      write FOnWildcardFind;
-    (* returns the given position as it would be drawn in the offset gutter,
-      see also @link(OffsetFormat)
-    *)
     function GetOffsetString(const Position: cardinal): string; virtual;
     (* returns the given position as it would be drawn in the offset gutter, exception:
       if @link(OffsetFormat) is set to an empty string, returns the hexadecimal representation
@@ -1163,35 +1110,24 @@ type
        - aEnd: searches up to this position<br>
        - IgnoreCase: if True, lowercase and uppercase characters are treated as if they were equal<br>
        - SearchText: if True, the current @link(Translation) is taken into account when searching textual data<br><br>
-       NOTE: call @link(PrepareFindReplaceData) before the first Find call
     *)
-    function Find(aBuffer: PChar; aCount: integer; const aStart, aEnd: integer;
-      const IgnoreCase: boolean): integer;
+    function Find(aPattern: Pointer; aCount: integer; const aStart,
+      aEnd: integer): integer; overload;
+    function Find(aPattern: string; const aStart, aEnd: integer;
+      const IgnoreCase: boolean): integer; overload;
     (* searches for text or data in the data buffer using a wildcard character
        returns the find position (-1, if data have not been found):<br><br>
-       - aBuffer: data to search for<br>
+       - aPattern: data to search for<br>
        - aCount: size of data in aBuffer<br>
        - aStart: start search at this position<br>
        - aEnd: searches up to this position<br>
-       - IgnoreCase: if True, lowercase and uppercase characters are treated as if they were equal<br>
-       - SearchText: if True, the current @link(Translation) is taken into account when searching textual data<br>
-       - Wildcard: this character is a placeholder for any character<br><br>
-       NOTE: call @link(PrepareFindReplaceData) before the first FindWithWildcard call
-    *)
-    function FindWithWildcard(aBuffer: PChar; aCount: integer; const aStart,
-      aEnd: integer;
-      const IgnoreCase: boolean; const Wildcard: char): integer;
-    (* convert a buffer for @link(Find)/@link(FindWithWildcard)/replace operation depending on
-       unicode mode. sets the string to lower case if IgnoreCase is True. if in unicode mode,
-       creates a unicode string.
+       - IgnoreCase: if True, lowercase and uppercase characters are treated as if they were equal<br><br>
     *)
     (*
       store a selection as undo record, so you can restore the selection start and end by using
       @link(Undo). this can be useful e.g. to show position of replaced data
     *)
     procedure AddSelectionUndo(const AStart, ACount: integer);
-    function PrepareFindReplaceData(StrData: string; const IgnoreCase, IsText:
-      boolean): string;
     // read data into a buffer
     procedure ReadBuffer(var Buffer; const Index, Count: Integer);
     // write a buffer to the file data
@@ -1513,8 +1449,6 @@ type
     property BytesPerBlock;
     // see inherited @inherited
     property SeparateBlocksInCharField;
-    // see inherited @inherited
-    property FindProgress;
     // see inherited @inherited
     property RulerNumberBase;
   end;
@@ -2539,7 +2473,7 @@ begin
     Result := RadixToInt(Copy(Value, 2, MaxInt), 2)
   else
     // decimal
-    Result := StrToInt(Value);
+    Result := SysUtils.StrToInt(Value);
 end;
 
 function CheckRadixToInt64(Value: string): int64;
@@ -2610,9 +2544,6 @@ begin
   FAutoBytesPerRow := False;
   FRulerNumberBase := 16;
   FOffsetHandler := False;
-  FOnFind := nil;
-  FOnWildcardFind := nil;
-  FFindProgress := False;
   FBlockSize := -1;
   FSepCharBlocks := True;
   FUnicodeCharacters := False;
@@ -4876,139 +4807,55 @@ begin
   Result := FBytesPerCol div 2;
 end;
 
-function TCustomBCHexEditor.PrepareFindReplaceData(StrData: string; const
-  IgnoreCase, IsText: boolean): string;
+function TCustomBCHexEditor.Find(aPattern: Pointer; aCount: integer; const aStart,
+  aEnd: integer): integer;
 var
-  LWStrTemp: WideString;
-  LIntLoop: Integer;
-  lChrTbl: Char;
+  I: Integer;
+  J: Integer;
+  LData: PAnsiChar;
 begin
-  if Length(StrData) = 0 then
-    Result := ''
-  else
+  LData := PAnsiChar(GetFastPointer(aStart, aEnd - AStart));
+
+  for I := 0 to aEnd - aStart - aCount do
   begin
-    if IgnoreCase then
-      StrData := AnsiLowerCase(StrData);
-    if IsText and (FTranslation <> tkAsIs) then
-    begin
-      UniqueString(StrData);
-      TranslateBufferFromAnsi(FTranslation, @StrData[1], @StrData[1],
-        Length(StrData));
-    end;
-    if (not IsText) or (not FUnicodeCharacters) then
-      Result := StrData
-    else
-    begin
-      // create a unicode string
-      LWStrTemp := StrData;
-      if FUnicodeBigEndian then
-        for LIntLoop := 1 to Length(LWStrTemp) do
-          SwapWideChar(LWStrTemp[LIntLoop]);
-      SetLength(Result, Length(LWStrTemp) * 2);
-      Move(LWStrTemp[1], Result[1], Length(Result));
-    end;
-
-    // create compare tables
-    for LChrTbl := #0 to #255 do
-    begin
-      FFindTable[LChrTbl] := LChrTbl;
-
-      FFindTableI[LChrTbl] := LChrTbl;
-      if FTranslation <> tkAsIs then
-        TranslateBufferToAnsi(FTranslation, @FFindTableI[LChrTbl],
-          @FFindTableI[LChrTbl], 1);
-      CharLowerBuff(@FFindTableI[LChrTbl], 1);
-      if FTranslation <> tkAsIs then
-        TranslateBufferFromAnsi(FTranslation, @FFindTableI[LChrTbl],
-          @FFindTableI[LChrTbl], 1);
-    end;
+    for J := 0 to aCount - 1 do
+      if (PAnsiChar(aPattern)[J] <> LData[I + J]) then
+        Continue;
+    Exit(I);
   end;
+
+  Result := -1;
 end;
 
-function TCustomBCHexEditor.Find(aBuffer: PChar; aCount: integer; const aStart,
-  aEnd: integer; const IgnoreCase: boolean): integer;
+function TCustomBCHexEditor.Find(aPattern: string; const aStart, aEnd: integer;
+  const IgnoreCase: boolean): integer;
 var
-  LBoolDummy: Boolean;
-  LChrCurrent: char;
-  LIntCurPos,
-    LIntLoop,
-    LIntFound,
-    LIntEnd: integer;
-  cLoop,
-    cInc: Cardinal;
-  LPTblFind: PBCHFindTable;
+  LData: string;
+  LPattern: string;
 begin
-  if Assigned(FOnFind) then
-    FOnFind(self, aBuffer, aCount, aStart, aEnd, IgnoreCase, #0, Result)
+  if (aPattern = '') then
+    Result := -1
+  else if ((aEnd >= DataSize) or (Length(aPattern) > aEnd - aStart)) then
+    raise ERangeError.Create(SRangeError)
   else
   begin
-    Result := -1;
-    LIntEnd := aEnd;
-    cLoop := 0;
-    if LIntEnd >= DataSize then
-      LIntEnd := DataSize - 1;
-
-    if aCount < 1 then
-      Exit;
-
-    if aStart + aCount > (LIntEnd + 1) then
-      Exit; // will never be found, if search-part is smaller than searched data
-
-    if IgnoreCase then
-      LPTblFind := @FFindTableI
+    if (not IgnoreCase) then
+      LPattern := aPattern
     else
-      LPTblFind := @FFindTable;
-
-    cInc := DataSize div 500;
-
-    WaitCursor;
-    try
-
-      LIntCurPos := aStart;
-      LIntLoop := 0;
-      LIntFound := LIntCurPos + 1;
-
-      repeat
-        if FFindProgress and Assigned(FOnProgress) then
-        begin
-          Inc(cLoop);
-          // changed in 12-28-2004 to avoid edivbyzero
-          if (cInc = 0) or ((cLoop mod cInc) = 0) then
-            FOnProgress(self, pkFind, FFileName, Round((LIntCurpos / DataSize) *
-              100), LBoolDummy);
-        end;
-
-        if LIntCurPos > LIntEnd then
-          Exit;
-
-        LChrCurrent := LPTblFind^[char(Data[LIntCurPos])];
-
-        if (LChrCurrent = aBuffer[LIntLoop]) then
-        begin
-          if LIntLoop = (aCount - 1) then
-          begin
-            Result := LIntCurPos - aCount + 1;
-            Exit;
-          end
-          else
-          begin
-            if LIntLoop = 0 then
-              LIntFound := LIntCurPos + 1;
-            Inc(LIntCurPos);
-            Inc(LIntLoop);
-          end;
-        end
-        else
-        begin
-          LIntCurPos := LIntFound;
-          LIntLoop := 0;
-          LIntFound := LIntCurPos + 1;
-        end;
-      until False;
-
-    finally
-      OldCursor;
+    begin
+      LPattern := Copy(aPattern, 1, Length(aPattern)); // Make sure, the compiler creates a new string
+      CharLowerBuff(PChar(LPattern), Length(lPattern));
     end;
+
+    SetLength(LData, (aEnd - AStart) div 2);
+    if (not UnicodeChars) then
+      MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, PAnsiChar(GetFastPointer(aStart, aEnd - AStart)), aEnd - AStart, PChar(LData), Length(LData))
+    else
+      MoveMemory(PChar(LData), GetFastPointer(aStart, aEnd - AStart), aEnd - AStart);
+    if (IgnoreCase) then
+      CharLowerBuff(PChar(LData), (aEnd - AStart) div 2);
+
+    Result := Pos(LPattern, LData);
   end;
 end;
 
@@ -5016,100 +4863,6 @@ procedure TCustomBCHexEditor.AddSelectionUndo(const AStart,
   ACount: integer);
 begin
   CreateUndo(ufKindSelection, AStart, aCount, 0, '');
-end;
-
-function TCustomBCHexEditor.FindWithWildcard(aBuffer: PChar;
-  aCount: integer; const aStart, aEnd: integer; const IgnoreCase: boolean;
-  const Wildcard: char): integer;
-var
-  LBoolDummy: boolean;
-  LChrCurrent: char;
-  LIntCurPos,
-    LIntLoop,
-    LIntFound,
-    LIntEnd: integer;
-  bFound: boolean;
-  cLoop,
-    cInc: cardinal;
-  LPTblFind: PBCHFindTable;
-begin
-  if Assigned(FOnWildcardFind) then
-    FOnWildcardFind(self, aBuffer, aCount, aStart, aEnd, IgnoreCase, Wildcard,
-      Result)
-  else
-  begin
-    Result := -1;
-    LIntEnd := aEnd;
-    cLoop := 0;
-    if LIntEnd >= DataSize then
-      LIntEnd := DataSize - 1;
-
-    if aCount < 1 then
-      Exit;
-
-    if aStart + aCount > (LIntEnd + 1) then
-      Exit; // will never be found, if search-part is smaller than searched data
-
-    if IgnoreCase then
-      LPTblFind := @FFindTableI
-    else
-      LPTblFind := @FFindTable;
-
-    cInc := DataSize div 500;
-
-    WaitCursor;
-    try
-      LIntCurPos := aStart;
-      LIntLoop := 0;
-      LIntFound := LIntCurPos + 1;
-
-      repeat
-        if FFindProgress and Assigned(FOnProgress) then
-        begin
-          Inc(cLoop);
-          // changed in 12-28-2004 to avoid edivbyzero
-          if (cInc = 0) or ((cLoop mod cInc) = 0) then
-            FOnProgress(self, pkFind, FFileName, Round((LIntCurpos / DataSize) *
-              100), LBoolDummy);
-        end;
-
-        if LIntCurPos > LIntEnd then
-          Exit;
-
-        bFound := aBuffer[LIntLoop] = WildCard;
-        if not bFound then
-        begin
-          LChrCurrent := LPTblFind^[char(Data[LIntCurPos])];
-          bFound := (LChrCurrent = aBuffer[LIntLoop]);
-        end;
-
-        if bFound then
-        begin
-          if LIntLoop = (aCount - 1) then
-          begin
-            Result := LIntCurPos - aCount + 1;
-            Exit;
-          end
-          else
-          begin
-            if LIntLoop = 0 then
-              LIntFound := LIntCurPos + 1;
-            Inc(LIntCurPos);
-            Inc(LIntLoop);
-          end;
-        end
-        else
-        begin
-          LIntCurPos := LIntFound;
-          LIntLoop := 0;
-          LIntFound := LIntCurPos + 1;
-        end;
-      until False;
-
-    finally
-      OldCursor;
-    end;
-  end;
 end;
 
 procedure TCustomBCHexEditor.SetOffsetDisplayWidth;
@@ -7222,11 +6975,6 @@ begin
     if Value and (FBlockSize > 1) then
       AdjustMetrics;
   end;
-end;
-
-procedure TCustomBCHexEditor.SetFindProgress(const Value: boolean);
-begin
-  FFindProgress := Value;
 end;
 
 procedure TCustomBCHexEditor.DefineProperties(Filer: TFiler);
