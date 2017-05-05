@@ -4818,10 +4818,11 @@ begin
 
   for I := 0 to aEnd - aStart - aCount do
   begin
-    for J := 0 to aCount - 1 do
-      if (PAnsiChar(aPattern)[J] <> LData[I + J]) then
-        Continue;
-    Exit(I);
+    J := 0;
+    while ((J < aCount) and (PAnsiChar(aPattern)[J] = LData[I + J])) do
+      Inc(J);
+    if (J < aCount) then
+      Exit(aStart + I);
   end;
 
   Result := -1;
@@ -4856,6 +4857,8 @@ begin
       CharLowerBuff(PChar(LData), (aEnd - AStart) div 2);
 
     Result := Pos(LPattern, LData);
+    if (Result >= 0) then
+      Inc(Result, aStart);
   end;
 end;
 
