@@ -1013,6 +1013,9 @@ type
     procedure ReadMaskChar(Reader: TReader);
     procedure ReadMaskChar_I(Reader: TReader);
     procedure WriteMaskChar_I(Writer: TWriter);
+{$IF CompilerVersion >= 26.0}
+    procedure DrawCell(ACol, ARow: Longint; ARect: TRect;  AState: TGridDrawState); override;
+{$IFEND}
   public
     { Public-Deklarationen }
 
@@ -7101,6 +7104,13 @@ begin
   iPos := (iPos div FBytesPerRow) + GRID_FIXED;
   TopRow := Max(GRID_FIXED, Min(iPos - (VisibleRowCount div 2), RowCount-VisibleRowCount));
 end;
+
+{$IF CompilerVersion >= 26.0}
+procedure TCustomBCHexEditor.DrawCell(ACol, ARow: Longint; ARect: TRect;  AState: TGridDrawState);
+begin
+  // nothing to do, class overrides Paint
+end;
+{$IFEND}
 
 { TBCHColors }
 
